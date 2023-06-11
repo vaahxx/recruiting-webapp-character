@@ -28,12 +28,6 @@
   color: white;
 }
 
-/* .App-section {
-  flex: 1 1 0;
-  background-color: hsl(220deg 13% 13%);
-  color: white;
-} */
-
 .App-link {
   color: #61dafb;
 }
@@ -49,6 +43,22 @@
 .attribute__value {
   display: flex;
   gap: 7px;
+}
+
+.App-class-selector {
+  flex: 1 1 0;
+  margin-top: 7px;
+}
+
+.App-class--minimum-attributes-complete {
+  background-color: green;
+}
+
+.App-section__minimum-required-statistics {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
 @keyframes App-logo-spin {
