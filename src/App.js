@@ -2,8 +2,15 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from "./consts.js";
 
-export const Attribute = ({ attribute, onChange }) => {
+function calculateAttributeModifier(value) {
+  return Math.floor((value - 10) / 2);
+}
+
+function Attribute({ attribute, onChange }) {
   const [value, setValue] = useState(0);
+  const [attributeModifier, setAttributeModifier] = useState(
+    calculateAttributeModifier(value)
+  );
 
   const handleIncrement = (e) => {
     setValue((value) => value + 1);
@@ -15,11 +22,14 @@ export const Attribute = ({ attribute, onChange }) => {
 
   useEffect(() => {
     onChange?.(value);
-  }, [value]);
+    setAttributeModifier(calculateAttributeModifier(value));
+  }, [onChange, value]);
 
   return (
     <div className='attribute'>
-      <h2>{attribute}</h2>
+      <h2>
+        {attribute} → modifier: {attributeModifier}
+      </h2>
       <div className='attribute__value'>
         Value:
         <button onClick={handleDecrement}>-</button>
@@ -28,7 +38,7 @@ export const Attribute = ({ attribute, onChange }) => {
       </div>
     </div>
   );
-};
+}
 
 function App() {
   const [selectedClass, setSelectedClass] = useState("Barbarian");
