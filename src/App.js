@@ -1,91 +1,31 @@
-import { useState, useEffect, Suspense, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import "./App.css";
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from "./consts.js";
+import {
+  defaultCharacter,
+  hasMinimumAttribute,
+  mountDefaultCharacters,
+} from "./utils";
+import { Attribute } from "./Attribute";
 
 const API_URL =
   "https://recruiting.verylongdomaintotestwith.ca/api/{vaahxx}/character";
 
-function calculateAttributeModifier(value) {
-  return Math.floor((value - 10) / 2);
-}
-
-function Attribute({ attribute, modifier, attributeValue, onChange }) {
-  const [value, setValue] = useState(attributeValue);
-  const [attributeModifier, setAttributeModifier] = useState(
-    modifier ? modifier : calculateAttributeModifier(value)
-  );
-
-  useEffect(() => {
-    setValue(attributeValue);
-  }, [attributeValue]);
-
-  const handleIncrement = (e) => {
-    setValue((value) => value + 1);
-  };
-
-  const handleDecrement = (e) => {
-    setValue((value) => (value < 0 ? 0 : value - 1));
-  };
-
-  useEffect(() => {
-    setAttributeModifier(calculateAttributeModifier(value));
-  }, [value]);
-
-  useEffect(() => {
-    onChange?.({
-      attribute: value,
-      modifier: attributeModifier,
-    });
-  }, [value, attributeModifier]);
-
-  return (
-    <div className='attribute'>
-      <h2>
-        {attribute} → modifier: {attributeModifier}
-      </h2>
-      <div className='attribute__value'>
-        Value:
-        <button onClick={handleDecrement}>-</button>
-        {value}
-        <button onClick={handleIncrement}>+</button>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const [selectedClass, setSelectedClass] = useState("Barbarian");
-  const [currentAttributes, setCurrentAttributes] = useState({});
   const [hasMinimumAttributes, setHasMinimumAttributes] = useState(false);
   const [minimumRequiredStatistics, setMinimumRequiredStatistics] = useState(
     CLASS_LIST.Barbarian
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [character, setCharacter] = useState({
-    class: CLASS_LIST.Barbarian,
-    attributes: {
-      Strength: 0,
-      Dexterity: 0,
-      Constitution: 0,
-      Intelligence: 0,
-      Wisdom: 0,
-      Charisma: 0,
-    },
-  });
+  const [characters, setCharacters] = useState(mountDefaultCharacters());
+  const [character, setCharacter] = useState(defaultCharacter);
 
   const handleAttributeValue = ({
     attribute,
     attributeValue,
     attributeModifier,
   }) => {
-    setCurrentAttributes({
-      ...currentAttributes,
-      [attribute]: {
-        value: attributeValue,
-        modifier: attributeModifier,
-      },
-    });
-
     setCharacter({
       class: selectedClass,
       attributes: {
@@ -96,25 +36,52 @@ function App() {
         },
       },
     });
+
+    setCharacters(
+      characters.map((character) => {
+        if (character.class === selectedClass) {
+          return {
+            ...character,
+            attributes: {
+              ...character.attributes,
+              [attribute]: {
+                value: attributeValue,
+                modifier: attributeModifier,
+              },
+            },
+          };
+        }
+        return character;
+      })
+    );
   };
 
   useEffect(() => {
-    const hasMinimumAttribute = (attribute, value) => {
-      return value >= CLASS_LIST[selectedClass][attribute];
-    };
-
-    const hasAttributes = Object.entries(currentAttributes).length;
-
-    setHasMinimumAttributes(
-      hasAttributes &&
-        Object.entries(currentAttributes).every(([key, { value }]) => {
-          return hasMinimumAttribute(key, value);
-        })
+    const selectedCharacter = characters.find(
+      (character) => character.class === selectedClass
     );
-  }, [currentAttributes, hasMinimumAttributes, selectedClass]);
+
+    setCharacter(selectedCharacter);
+  }, [characters]);
+
+  useEffect(() => {
+    const attributeEntries = Object.entries(character.attributes);
+    setHasMinimumAttributes(
+      attributeEntries.every(([key, { value }]) => {
+        return hasMinimumAttribute(key, value, selectedClass);
+      })
+    );
+  }, [hasMinimumAttributes, selectedClass, character]);
 
   useEffect(() => {
     setMinimumRequiredStatistics(CLASS_LIST[selectedClass]);
+    const savedCharacter = characters.find(
+      (character) => character.class === selectedClass
+    );
+    setCharacter({
+      class: selectedClass,
+      ...savedCharacter,
+    });
   }, [selectedClass]);
 
   useLayoutEffect(() => {
@@ -129,7 +96,7 @@ function App() {
           return;
         }
 
-        setCharacter(data.body);
+        setCharacters(data.body);
       } finally {
         setIsLoading(false);
       }
@@ -139,17 +106,18 @@ function App() {
   }, []);
 
   const saveCharacter = async () => {
-    const result = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(character),
-    });
-
-    await result.json();
-
-    alert("Character saved!");
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(characters),
+      });
+      alert("Saved successfully");
+    } catch (error) {
+      alert("Something happened! :(");
+    }
   };
 
   return (
