@@ -3,6 +3,8 @@
   text-align: center;
   display: flex;
   flex-direction: column;
+  background-color: hsl(220deg 13% 13%);
+  color: white;
 }
 
 .App-logo {
@@ -26,14 +28,27 @@
   color: white;
 }
 
-.App-section {
+/* .App-section {
   flex: 1 1 0;
   background-color: hsl(220deg 13% 13%);
   color: white;
-}
+} */
 
 .App-link {
   color: #61dafb;
+}
+
+.attribute {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.attribute__value {
+  display: flex;
+  gap: 7px;
 }
 
 @keyframes App-logo-spin {
