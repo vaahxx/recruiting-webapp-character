@@ -1,16 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, useLayoutEffect } from "react";
 import "./App.css";
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from "./consts.js";
+
+const API_URL =
+  "https://recruiting.verylongdomaintotestwith.ca/api/{vaahxx}/character";
 
 function calculateAttributeModifier(value) {
   return Math.floor((value - 10) / 2);
 }
 
-function Attribute({ attribute, onChange }) {
-  const [value, setValue] = useState(0);
+function Attribute({ attribute, modifier, attributeValue, onChange }) {
+  const [value, setValue] = useState(attributeValue);
   const [attributeModifier, setAttributeModifier] = useState(
-    calculateAttributeModifier(value)
+    modifier ? modifier : calculateAttributeModifier(value)
   );
+
+  useEffect(() => {
+    setValue(attributeValue);
+  }, [attributeValue]);
 
   const handleIncrement = (e) => {
     setValue((value) => value + 1);
@@ -21,9 +28,15 @@ function Attribute({ attribute, onChange }) {
   };
 
   useEffect(() => {
-    onChange?.(value);
     setAttributeModifier(calculateAttributeModifier(value));
-  }, [onChange, value]);
+  }, [value]);
+
+  useEffect(() => {
+    onChange?.({
+      attribute: value,
+      modifier: attributeModifier,
+    });
+  }, [value, attributeModifier]);
 
   return (
     <div className='attribute'>
@@ -47,9 +60,42 @@ function App() {
   const [minimumRequiredStatistics, setMinimumRequiredStatistics] = useState(
     CLASS_LIST.Barbarian
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [character, setCharacter] = useState({
+    class: CLASS_LIST.Barbarian,
+    attributes: {
+      Strength: 0,
+      Dexterity: 0,
+      Constitution: 0,
+      Intelligence: 0,
+      Wisdom: 0,
+      Charisma: 0,
+    },
+  });
 
-  const handleAttributeValue = (attribute, value) => {
-    setCurrentAttributes({ ...currentAttributes, [attribute]: value });
+  const handleAttributeValue = ({
+    attribute,
+    attributeValue,
+    attributeModifier,
+  }) => {
+    setCurrentAttributes({
+      ...currentAttributes,
+      [attribute]: {
+        value: attributeValue,
+        modifier: attributeModifier,
+      },
+    });
+
+    setCharacter({
+      class: selectedClass,
+      attributes: {
+        ...character.attributes,
+        [attribute]: {
+          value: attributeValue,
+          modifier: attributeModifier,
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -61,7 +107,7 @@ function App() {
 
     setHasMinimumAttributes(
       hasAttributes &&
-        Object.entries(currentAttributes).every(([key, value]) => {
+        Object.entries(currentAttributes).every(([key, { value }]) => {
           return hasMinimumAttribute(key, value);
         })
     );
@@ -70,6 +116,41 @@ function App() {
   useEffect(() => {
     setMinimumRequiredStatistics(CLASS_LIST[selectedClass]);
   }, [selectedClass]);
+
+  useLayoutEffect(() => {
+    setIsLoading(true);
+    const fetchCharacter = async () => {
+      try {
+        const result = await fetch(API_URL);
+
+        const data = await result.json();
+
+        if (!data.body) {
+          return;
+        }
+
+        setCharacter(data.body);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCharacter();
+  }, []);
+
+  const saveCharacter = async () => {
+    const result = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(character),
+    });
+
+    await result.json();
+
+    alert("Character saved!");
+  };
 
   return (
     <div className='App'>
@@ -97,24 +178,39 @@ function App() {
         <div className='App-section__minimum-required-statistics'>
           <h4>Minimum required statistics</h4>
           {Object.entries(minimumRequiredStatistics).map(([key, value]) => (
-            <span>
+            <span key={key}>
               {key}: {value}
             </span>
           ))}
         </div>
       </section>
 
-      <section className='App-section'>
-        {ATTRIBUTE_LIST.map((attribute) => (
-          <Attribute
-            key={attribute}
-            attribute={attribute}
-            onChange={(attributeValue) =>
-              handleAttributeValue(attribute, attributeValue)
-            }
-          />
-        ))}
-      </section>
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <section className='App-section'>
+          {ATTRIBUTE_LIST.map((attribute) => (
+            <Attribute
+              key={attribute}
+              attribute={attribute}
+              attributeValue={character.attributes[attribute].value || 0}
+              modifier={character.attributes[attribute].modifier || 0}
+              onChange={({
+                attribute: attributeValue,
+                modifier: attributeModifier,
+              }) =>
+                handleAttributeValue({
+                  attribute,
+                  attributeValue,
+                  attributeModifier,
+                })
+              }
+            />
+          ))}
+        </section>
+      )}
+
+      <button onClick={saveCharacter}>Save</button>
     </div>
   );
 }
