@@ -1,5 +1,69 @@
 # recruiting-webapp-character
-React coding test
+This is my submission for the RPG Character Management coding assignment. I have completed the following requirements within the given time limit of 2 hours:
+
+### Completed Requirements
+- Created state and controls for each of the 6 attributes (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma) to increment/decrement independently.
+- Displayed classes on the screen and visually changed the UI when the character meets the minimum requirements for a class.
+- Implemented the functionality to display the minimum required statistics for a class when clicked.
+- Added ability modifiers to each attribute row based on the provided formula.
+- Saved the characters to an API endpoint for persistence using a POST request and retrieved the data using a GET request.
+
+Note: I was unable to implement the skills functionality (item 5) within the time restrictions. As I am not familiar with RPG concepts, it took me more time to understand the requirements and design a suitable solution. Unfortunately, I ran out of time to complete this part of the assignment.
+
+### Insights
+Although I faced a few challenges due to my lack of familiarity with RPG concepts, this coding assessment provided a valuable learning experience. I had the opportunity to work within a limited time frame and encountered a scenario where I needed to prioritize tasks. This challenge allowed me to improve my problem-solving skills and time management, and just because of that it was worth of doing.
+
+### Steps to implement the remaining items
+Here are high-level steps for how I would implement the remaining items if I had more time:
+
+#### Implement Skills:
+
+- Create a section in the UI to display each skill from the SKILL_LIST separately.
+- Calculate the available skill points for each character based on the formula provided: 10 + (4 * Intelligence Modifier).
+- Allow the user to allocate skill points to different skills for each character. Ensure that the points allocated for a skill do not exceed the available skill points.
+- Display the points allocated, the ability modifier corresponding to the skill, and the total skill value (points + ability modifier) for each skill.
+
+#### Implement Maximum Attribute Limit:
+
+- Implement logic to check if the total attribute value exceeds 70 for any character.
+- If the total attribute value is equal to 70, restrict the user from increasing another attribute until they decrease one.
+
+#### Edit Multiple Characters:
+
+- Modify the UI to support multiple characters simultaneously.
+- Implement a map method that renders the main component for each class.
+- Ensure that the rules and validations mentioned in the previous requirements apply to each character independently.
+
+#### Skill Check Section:
+
+- Add a separate section in the UI to perform skill checks for each character.
+- Provide a dropdown to select the skill from the SKILL_LIST for the check.
+- Include an input field to collect the DC (minimum value for success) for the skill check.
+- Add a "Roll" button that triggers the generation of a random number between 1 and 20 (inclusive).
+- Display the random number generated, and indicate whether the skill check was successful or a failure based on the comparison.
+
+#### Party Skill Check Section:
+
+- Implement a separate section for party skill checks.
+- Determine the character with the highest total skill value across all characters.
+- Use the highest-scoring character to attempt the skill check, following the same procedure as in the individual skill check section.
+- Indicate which character was selected for the action in the UI.
+
+### Installation and Usage
+- Clone this repository to your local machine.
+- Install the required dependencies by running npm install.
+- Start the application with npm start.
+- Access the RPG Character Management app through your browser at http://localhost:3000.
+
+### Contact Information
+If you have any questions or feedback regarding this coding assessment, please feel free to reach out to me via email at valengarav@gmail.com. I am open to discussing any aspects of the project and appreciate your time and consideration.
+
+Thank you for reviewing my submission!
+
+Best regards,
+Valentina
+
+_____________________________
 
 # Create a repository from this template
 - Click on `Use this template` dropdown on this repo page.
